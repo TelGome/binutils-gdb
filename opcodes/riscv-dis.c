@@ -724,6 +724,14 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 		  print (info->stream, dis_style_immediate, "%d",
 			 (int)EXTRACT_ZCB_HALFWORD_UIMM (l));
 		  break;
+		case 'l':
+		  print (info->stream, dis_style_immediate, "%d",
+			 (int)ENCODE_QC_UIMM (l));
+		  break;
+		case 'm':
+		  print (info->stream, dis_style_immediate, "%d",
+			 (int)ENCODE_QC_CI_IMM (l));
+		  break;
 		case 'r':
 		  print_reg_list (info, l);
 		  break;
@@ -872,6 +880,19 @@ print_insn_args (const char *oparg, insn_t l, bfd_vma pc, disassemble_info *info
 		      break;
 		    }
 		  break;
+		}
+	      break;
+		case 'q': /* Vendor-specific (Qualcomm uC) operands.  */
+	      switch (*++oparg)
+		{
+		case 'd':
+		    print (info->stream, dis_style_immediate, "%d",
+			((int) EXTRACT_QC_IMM (l)));
+		    break;
+		case 'h':
+		    print (info->stream, dis_style_immediate, "%d",
+			((int) EXTRACT_QC_I_UIMM (l)));
+		    break;
 		}
 	      break;
 	    default:

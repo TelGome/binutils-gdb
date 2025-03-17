@@ -1654,10 +1654,13 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 		/* sreg operators in cm.mvsa01 and cm.mva01s.  */
 		case '1': USE_BITS (OP_MASK_SREG1, OP_SH_SREG1); break;
 		case '2': USE_BITS (OP_MASK_SREG2, OP_SH_SREG2); break;
+		case '3': USE_BITS (OP_MASK_SREG3, OP_SH_SREG3); break;
 		/* byte immediate operators, load/store byte insns.  */
 		case 'h': used_bits |= ENCODE_ZCB_HALFWORD_UIMM (-1U); break;
 		/* halfword immediate operators, load/store halfword insns.  */
 		case 'b': used_bits |= ENCODE_ZCB_BYTE_UIMM (-1U); break;
+		case 'l': used_bits |= ENCODE_QC_UIMM (-1U); break;
+		case 'm': used_bits |= ENCODE_QC_CI_IMM (-1U); break;
 		/* Immediate offset operand for cm.push and cm.pop.  */
 		case 'p': used_bits |= ENCODE_ZCMP_SPIMM (-1U); break;
 		/* Register list operand for cm.push and cm.pop.  */
@@ -1754,6 +1757,30 @@ validate_riscv_insn (const struct riscv_opcode *opc, int length)
 			  goto unknown_validate_operand;
 		      }
 		    break;
+		  default:
+		    goto unknown_validate_operand;
+		}
+		break;
+		case 'q': /* Vendor-specific (Qualcomm uC) operands.  */
+	      switch (*++oparg)
+		{
+		  case 'a': used_bits |= ENCODE_QC_IMM2 (-1U); break;
+		  case 'b': used_bits |= ENCODE_QC_IMM3 (-1U); break;
+		  case 'c': used_bits |= ENCODE_QC_I_IMM (-1U); break;
+		  case 'd': used_bits |= ENCODE_QC_IMM (-1U); break;
+		//   case 'e': used_bits |= EXTRACT_QC_BI_IMM5 (-1U); break;
+		  case 'f': used_bits |= ENCODE_QC_UIMM6 (-1U); break;
+		  case 'g': used_bits |= ENCODE_QC_EB_IMM (-1U); break;
+		  case 'h': used_bits |= ENCODE_QC_I_UIMM (-1U); break;
+		  case 'i': used_bits |= ENCODE_QC_R_IMM (-1U); break;
+		  case 'j': used_bits |= ENCODE_QC_EJ_IMM (-1U); break;
+		  case 'k': used_bits |= ENCODE_QC_EAI_IMM (-1U); break;
+		  case 'l': used_bits |= ENCODE_QC_EI_IMM (-1U); break;
+		  case 'm': used_bits |= ENCODE_QC_R_IMM1 (-1U); break;
+		  case 'n': used_bits |= ENCODE_QC_I_IMM1 (-1U); break;
+		  case 'o': used_bits |= ENCODE_QC_I_IMM2 (-1U); break;
+		  case 'p': used_bits |= ENCODE_QC_SIMM (-1U); break;
+		  case 'q': used_bits |= ENCODE_QC_IMM1(-1U); break;
 		  default:
 		    goto unknown_validate_operand;
 		}
@@ -3892,6 +3919,26 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 			break;
 		      ip->insn_opcode |= ENCODE_ZCB_BYTE_UIMM (imm_expr->X_add_number);
 		      goto rvc_imm_done;
+			case 'l': /* Immediate field for qc.c.muliadd.  */
+		      /* Handle cases, such as qc.c.muliadd rd, rs1, uimm.  */
+		      if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+			continue;
+		      if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+			  || imm_expr->X_op != O_constant
+			  || !VALID_QC_UIMM ((valueT) imm_expr->X_add_number))
+			break;
+		      ip->insn_opcode |= ENCODE_QC_UIMM (imm_expr->X_add_number);
+		      goto rvc_imm_done;
+			case 'm': /* Immediate field for qc.c.delay.  */
+		      /* Handle cases, such as qc.c.delay.  */
+		      if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+			continue;
+		      if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+			  || imm_expr->X_op != O_constant
+			  || !VALID_QC_CI_IMM ((valueT) imm_expr->X_add_number))
+			break;
+		      ip->insn_opcode |= ENCODE_QC_CI_IMM (imm_expr->X_add_number);
+		      goto rvc_imm_done;
 		    case 'r':
 		      if (!reglist_lookup (&asarg, &regno))
 			break;
@@ -3934,6 +3981,12 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 			  || !RISCV_SREG_0_7 (regno))
 			break;
 		      INSERT_OPERAND (SREG2, *ip, regno % 8);
+		      continue;
+			case '3':
+		      if (!reg_lookup (&asarg, RCLASS_GPR, &regno)
+			  || !RISCV_SREG_0_7 (regno))
+			break;
+		      INSERT_OPERAND (SREG3, *ip, regno % 8);
 		      continue;
 		    case 'I': /* index operand of cm.jt. The range is from 0 to 31.  */
 		      my_getSmallExpression (imm_expr, imm_reloc, asarg, p);
@@ -4124,6 +4177,72 @@ riscv_ip (char *str, struct riscv_cl_insn *ip, expressionS *imm_expr,
 			ip->insn_opcode
 			    |= ENCODE_CV_SIMD_UIMM6 (imm_expr->X_add_number);
 			continue;
+		      default:
+			goto unknown_riscv_ip_operand;
+		    }
+		  break;
+		
+		case 'q': /* Vendor-specific (Qualcomm uC) operands.  */
+		  switch (*++oparg)
+		    {
+		    //   case 'd':
+			// my_getExpression (imm_expr, asarg);
+			// check_absolute_expr (ip, imm_expr, FALSE);
+			// if (!VALID_QC_IMM (imm_expr->X_add_number))
+			//   as_bad (_("bad value for qc.wrapi immediate field, "
+			// 	  "value must be 0..4095"));
+			// ip->insn_opcode
+			//   |= ENCODE_QC_IMM (imm_expr->X_add_number);
+			// imm_expr->X_op = O_absent;
+			// asarg = expr_parse_end;
+			// continue;
+
+			case 'd': 
+		      if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+			continue;
+		      if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+			  || imm_expr->X_op != O_constant
+			  || !VALID_QC_IMM ((valueT) imm_expr->X_add_number))
+			break;
+		      ip->insn_opcode |= ENCODE_QC_IMM (imm_expr->X_add_number);
+		      goto rvc_imm_done;
+			//   case 'h': 
+		    //   if (riscv_handle_implicit_zero_offset (imm_expr, asarg))
+			// continue;
+		    //   if (my_getSmallExpression (imm_expr, imm_reloc, asarg, p)
+			//   || imm_expr->X_op != O_constant
+			//   || !VALID_QC_I_UIMM ((valueT) imm_expr->X_add_number))
+			// break;
+		    //   ip->insn_opcode |= ENCODE_QC_I_UIMM (imm_expr->X_add_number);
+		    //   goto rvc_imm_done;
+			
+			  case 'h':
+			  my_getExpression (imm_expr, asarg);
+			  check_absolute_expr (ip, imm_expr, FALSE);
+			  if (!VALID_QC_I_UIMM (imm_expr->X_add_number))
+			  as_bad (_("bad value for qc.muliadd immediate field, "
+				  "value must be 0..2047"));
+			  asarg = expr_parse_end;
+			  if (imm_expr->X_add_number<0
+				  || imm_expr->X_add_number>2047)
+				break;
+			  ip->insn_opcode
+				  |= ENCODE_QC_I_UIMM (imm_expr->X_add_number);
+				continue;
+
+
+		    //   case 'h':
+			// my_getExpression (imm_expr, asarg);
+			// check_absolute_expr (ip, imm_expr, FALSE);
+			// if (!VALID_QC_I_UIMM (imm_expr->X_add_number))
+			//   as_bad (_("bad value for qc.muliadd immediate field, "
+			// 	  "value must be 0..2047"));
+			// ip->insn_opcode
+			//   |= ENCODE_QC_I_UIMM (imm_expr->X_add_number);
+			// imm_expr->X_op = O_absent;
+			// asarg = expr_parse_end;
+			// continue;
+		    
 		      default:
 			goto unknown_riscv_ip_operand;
 		    }

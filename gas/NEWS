@@ -4,6 +4,8 @@
 
 * Add support for the RISC-V Qualcomm uC xqccmp extension, version 0.1.0.
 
+* Add support for the RISC-V Qualcomm uC xqci extension, version 0.6.0.
+
 Changes in 2.44:
 
 * Add support for the x86 Intel Diamond Rapids AMX instructions, including

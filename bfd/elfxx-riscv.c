@@ -1284,6 +1284,16 @@ static struct riscv_implicit_subset riscv_implicit_subsets[] =
   {"svbare", "+zicsr", check_implicit_always},
 
   {"xqccmp", "+zca",  check_implicit_always},
+  {"xqciac", "+zca", check_implicit_always},
+  {"xqcibi", "+zca", check_implicit_always},
+  {"xqcibm", "+zca", check_implicit_always},
+  {"xqcicm", "+zca", check_implicit_always},
+  {"xqciint", "+zca", check_implicit_always},
+  {"xqcilb", "+zca", check_implicit_always},
+  {"xqcilia", "+zca", check_implicit_always},
+  {"xqcilo", "+zca", check_implicit_always},
+  {"xqcisim", "+zca", check_implicit_always},
+  {"xqcisync", "+zca", check_implicit_always},
 
   {NULL, NULL, NULL}
 };
@@ -1517,6 +1527,23 @@ static struct riscv_supported_ext riscv_supported_vendor_x_ext[] =
   {"xsfvqmaccdod",	ISA_SPEC_CLASS_DRAFT,	1, 0, 0},
   {"xsfvfnrclipxfqf",	ISA_SPEC_CLASS_DRAFT,	1, 0, 0},
   {"xqccmp",	ISA_SPEC_CLASS_DRAFT,	0, 1, 0 },
+  {"xqcia",	  ISA_SPEC_CLASS_DRAFT,	0, 4, 0},
+  {"xqciac",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcibi",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcibm",	ISA_SPEC_CLASS_DRAFT,	0, 4, 0},
+  {"xqcicli",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcicm",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcics",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcicsr",	ISA_SPEC_CLASS_DRAFT,	0, 3, 0},
+  {"xqciint",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcilb",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcili",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcilia",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcilo",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcilsm",	ISA_SPEC_CLASS_DRAFT,	0, 4, 0},
+  {"xqcisim",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcisls",	ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
+  {"xqcisync",ISA_SPEC_CLASS_DRAFT,	0, 2, 0},
   {NULL, 0, 0, 0, 0}
 };
 
@@ -2825,6 +2852,40 @@ riscv_multi_subset_supports (riscv_parse_subset_t *rps,
       return riscv_subset_supports (rps, "xsfvfnrclipxfqf");
     case INSN_CLASS_XQCCMP:
       return riscv_subset_supports (rps, "xqccmp");
+    case INSN_CLASS_XQCIA:
+      return riscv_subset_supports (rps, "xqcia");
+    case INSN_CLASS_XQCIAC:
+      return riscv_subset_supports (rps, "xqciac");
+    case INSN_CLASS_XQCIBI:
+      return riscv_subset_supports (rps, "xqcibi");
+    case INSN_CLASS_XQCIBM:
+      return riscv_subset_supports (rps, "xqcibm");
+    case INSN_CLASS_XQCICLI:
+      return riscv_subset_supports (rps, "xqcicli");
+    case INSN_CLASS_XQCICM:
+      return riscv_subset_supports (rps, "xqcicm");
+    case INSN_CLASS_XQCICS:
+      return riscv_subset_supports (rps, "xqcics");
+    case INSN_CLASS_XQCICSR:
+      return riscv_subset_supports (rps, "xqcicsr");
+    case INSN_CLASS_XQCIINT:
+      return riscv_subset_supports (rps, "xqciint");
+    case INSN_CLASS_XQCILB:
+      return riscv_subset_supports (rps, "xqcilb");
+    case INSN_CLASS_XQCILI:
+      return riscv_subset_supports (rps, "xqcili");
+    case INSN_CLASS_XQCILIA:
+      return riscv_subset_supports (rps, "xqcilia");
+    case INSN_CLASS_XQCILO:
+      return riscv_subset_supports (rps, "xqcilo");
+    case INSN_CLASS_XQCILSM:
+      return riscv_subset_supports (rps, "xqcilsm");
+    case INSN_CLASS_XQCISIM:
+      return riscv_subset_supports (rps, "xqcisim");
+    case INSN_CLASS_XQCISLS:
+      return riscv_subset_supports (rps, "xqcisls");
+    case INSN_CLASS_XQCISYNC:
+      return riscv_subset_supports (rps, "xqcisync");
     default:
       rps->error_handler
         (_("internal: unreachable INSN_CLASS_*"));

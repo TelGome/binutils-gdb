@@ -167,3 +167,20 @@ All available -march extensions for RISC-V:
 	xsfvqmaccdod                            1.0
 	xsfvfnrclipxfqf                         1.0
 	xqccmp                                  0.1
+	xqcia                                   0.4
+	xqciac                                  0.2
+	xqcibi                                  0.2
+	xqcibm                                  0.4
+	xqcicli                                 0.2
+	xqcicm                                  0.2
+	xqcics                                  0.2
+	xqcicsr                                 0.3
+	xqciint                                 0.2
+	xqcilb                                  0.2
+	xqcili                                  0.2
+	xqcilia                                 0.2
+	xqcilo                                  0.2
+	xqcilsm                                 0.4
+	xqcisim                                 0.2
+	xqcisls                                 0.2
+	xqcisync                                0.2

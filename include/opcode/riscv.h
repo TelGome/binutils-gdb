@@ -132,6 +132,15 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 25, 1)) | (RV_X(x, 20, 5) << 1) | (RV_IMM_SIGN_N(x, 20, 5) << 5))
 #define EXTRACT_CV_SIMD_UIMM6(x) \
   ((RV_X(x, 25, 1)) | (RV_X(x, 20, 5) << 1))
+/* Qualcomm uC extract macros.  */
+#define EXTRACT_QC_IMM(x) \
+  (RV_X(x, 0, 12) <<20)
+#define EXTRACT_QC_UIMM(x) \
+  ((RV_X(x, 6, 1)) | (RV_X(x, 5, 1) << 4) | (RV_X(x, 10, 3) << 1))
+#define EXTRACT_QC_CI_IMM(x) \
+  (RV_X(x, 0, 5) <<2)
+#define EXTRACT_QC_I_UIMM(x) \
+  (RV_X(x, 0, 11) <<20)
 
 #define ENCODE_ITYPE_IMM(x) \
   (RV_X(x, 0, 12) << 20)
@@ -200,6 +209,45 @@ static inline unsigned int riscv_insn_length (insn_t insn)
   ((RV_X(x, 0, 1) << 25) | (RV_X(x, 1, 5) << 20))
 #define ENCODE_CV_SIMD_UIMM6(x) \
   ((RV_X(x, 0, 1) << 25) | (RV_X(x, 1, 5) << 20))
+  /* Qualcomm uC encode macros.  */
+#define ENCODE_QC_IMM(x) \
+  (RV_X(x, 20, 12))
+#define EXTRACT_QC_BI_IMM5(x) \
+  (RV_X(x, 20, 5))
+#define ENCODE_QC_UIMM6(x) \
+  ((RV_X(x, 1, 4) << 8) | (RV_X(x, 5, 6) << 25) | (RV_X(x, 12, 1) << 31) | (RV_X(x, 11, 1) << 7))
+#define ENCODE_QC_EB_IMM(x) \
+  (RV_X(x, 32, 16))
+#define ENCODE_QC_I_UIMM(x) \
+  (RV_X(x, 20, 11))
+#define ENCODE_QC_R_IMM(x) \
+  (RV_X(x, 15, 10))
+#define ENCODE_QC_EJ_IMM(x) \
+  ((RV_X(x, 1, 4) << 8) | (RV_X(x, 5, 6) << 25) | (RV_X(x, 11, 1) << 7) | (RV_X(x, 12, 1) << 31) | (RV_X(x, 16, 16) << 32))
+#define ENCODE_QC_EAI_IMM(x) \
+  (RV_X(x, 16, 32))
+#define ENCODE_QC_EI_IMM(x) \
+  ((RV_X(x, 0, 10) << 20) | (RV_X(x, 10, 16) << 32))
+#define ENCODE_QC_R_IMM1(x) \
+  ((RV_X(x, 2, 5) << 25))
+#define ENCODE_QC_I_IMM1(x) \
+  (RV_X(x, 20, 8))
+#define ENCODE_QC_I_IMM2(x) \
+  (RV_X(x, 20, 10))
+#define ENCODE_QC_CI_IMM(x) \
+  (RV_X(x, 2, 5))
+#define ENCODE_QC_UIMM(x) \
+  ((RV_X(x, 0, 1) << 6) | (RV_X(x, 4, 1) << 5) | (RV_X(x, 1, 3) << 10))
+#define ENCODE_QC_IMM2(x) \
+  (RV_X(x, 25, 5))
+#define ENCODE_QC_IMM3(x) \
+  (RV_X(x, 20, 5))
+#define ENCODE_QC_I_IMM(x) \
+  (RV_X(x, 15, 5))
+#define ENCODE_QC_SIMM(x) \
+  (RV_X(x, 27, 5))
+#define ENCODE_QC_IMM1(x) \
+  (RV_X(x, 15, 5))
 
 #define VALID_ITYPE_IMM(x) (EXTRACT_ITYPE_IMM(ENCODE_ITYPE_IMM(x)) == (x))
 #define VALID_STYPE_IMM(x) (EXTRACT_STYPE_IMM(ENCODE_STYPE_IMM(x)) == (x))
@@ -228,6 +276,10 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 #define VALID_ZCB_BYTE_UIMM(x) (EXTRACT_ZCB_BYTE_UIMM(ENCODE_ZCB_BYTE_UIMM(x)) == (x))
 #define VALID_ZCB_HALFWORD_UIMM(x) (EXTRACT_ZCB_HALFWORD_UIMM(ENCODE_ZCB_HALFWORD_UIMM(x)) == (x))
 #define VALID_ZCMP_SPIMM(x) (EXTRACT_ZCMP_SPIMM(ENCODE_ZCMP_SPIMM(x)) == (x))
+#define VALID_QC_UIMM(x) (EXTRACT_QC_UIMM(ENCODE_QC_UIMM(x)) == (x))
+#define VALID_QC_CI_IMM(x) (EXTRACT_QC_CI_IMM(ENCODE_QC_CI_IMM(x)) == (x))
+#define VALID_QC_IMM(x) (EXTRACT_QC_IMM(ENCODE_QC_IMM(x)) == (x))
+#define VALID_QC_I_UIMM(x) (EXTRACT_QC_I_UIMM(ENCODE_QC_I_UIMM(x)) == (x))
 
 #define RISCV_RTYPE(insn, rd, rs1, rs2) \
   ((MATCH_ ## insn) | ((rd) << OP_SH_RD) | ((rs1) << OP_SH_RS1) | ((rs2) << OP_SH_RS2))
@@ -373,6 +425,8 @@ static inline unsigned int riscv_insn_length (insn_t insn)
 #define OP_SH_SREG1		7
 #define OP_MASK_SREG2		0x7
 #define OP_SH_SREG2		2
+#define OP_MASK_SREG3		0x1f
+#define OP_SH_SREG3		7
 
 #define NVECR 32
 #define NVECM 1
@@ -562,6 +616,23 @@ enum riscv_insn_class
   INSN_CLASS_XSFVQMACCDOD,
   INSN_CLASS_XSFVFNRCLIPXFQF,
   INSN_CLASS_XQCCMP,
+  INSN_CLASS_XQCIA,
+  INSN_CLASS_XQCIAC,
+  INSN_CLASS_XQCIBI,
+  INSN_CLASS_XQCIBM,
+  INSN_CLASS_XQCICLI,
+  INSN_CLASS_XQCICM,
+  INSN_CLASS_XQCICS,
+  INSN_CLASS_XQCICSR,
+  INSN_CLASS_XQCIINT,
+  INSN_CLASS_XQCILB,
+  INSN_CLASS_XQCILI,
+  INSN_CLASS_XQCILIA,
+  INSN_CLASS_XQCILO,
+  INSN_CLASS_XQCILSM,
+  INSN_CLASS_XQCISIM,
+  INSN_CLASS_XQCISLS,
+  INSN_CLASS_XQCISYNC,
 };
 
 /* This structure holds information for a particular instruction.  */
